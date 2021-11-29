@@ -1,0 +1,49 @@
+version: "3"
+services:
+  mariadb:
+    image: mariadb:10.7
+    container_name: mariadb
+    hostname: mariadb
+    restart: unless-stopped
+    pull_policy: if_not_present
+    environment:
+        - MARIADB_ROOT_PASSWORD="verysecretpassword"
+        - MARIADB_DATABASE="mydopaldatabase"
+        - MARIADB_USER="mydopaluser"
+        - MARIADB_PASSWORD="mydopalpassword"
+    volumes:
+      - db-data:/var/lib/mysql
+  drupal:
+    image: ghcr.io/mbuechner/dopal/dopal:latest
+    container_name: drupal
+    depends_on:
+      - mariadb
+    links:
+      - "mariadb:mariadb"
+    restart: unless-stopped
+    pull_policy: always
+    ports:
+      - "8080:8080"
+      - "4430:4430"
+    environment:
+        - MYSQL_HOSTNAME="mariadb"
+        - MYSQL_DATABASE="mydopaldatabase"
+        - MYSQL_USER="mydopaluser"
+        - MYSQL_PASSWORD="mydopalpassword"
+        - MYSQL_PORT="3306"
+        - HASH_SALT="myverysecretdopalhashsalt"
+        - UPDATE_FREE_ACCESS="FALSE"
+        - FILE_PUBLIC_PATH="sites/default/files"
+        - FILE_PRIVATE_PATH="sites/default/files/privates"
+        #- TRUSTED_HOST_PATTERNS="^localhost\$, ^127.0.0.1\$"
+        # - HTPASSWD_USER="user"
+        # - HTPASSWD_PWD="password"
+        # - HTPASSWD_GREETING="Hello!"
+        - UPDATEDB_ON_STARTUP="yes"
+        - CACHEREBUILD_ON_STARTUP="no"
+        - USE_REDIS="no"
+    volumes:
+      - drupal-data:/var/www/html/web/sites/default/files
+volumes:
+  drupal-data:
+  db-data:

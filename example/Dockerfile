@@ -7,5 +7,5 @@ RUN mv /var/www/html/web/sites/default/settings.php /tmp/settings.php && \
     mv /tmp/settings.php /var/www/html/web/sites/default/settings.php
 
 # Copy all files to container and run Composer
-COPY / .
+COPY composer.json .
 RUN composer install --no-dev
